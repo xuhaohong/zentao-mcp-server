@@ -1,0 +1,7 @@
+{
+  "baseUrl": "https://zentao.example.com",
+  "token": "",
+  "account": "",
+  "password": "",
+  "timeoutMs": 15000
+}
