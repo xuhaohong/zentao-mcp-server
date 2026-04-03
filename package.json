@@ -1,17 +1,18 @@
 {
   "name": "zentao-mcp-installer",
-  "version": "0.1.3",
+  "version": "0.1.6",
   "description": "A local stdio MCP server for ZenTao with one-command installer",
   "type": "module",
   "private": false,
   "author": "bibilabu",
   "repository": {
     "type": "git",
-    "url": "https://github.com/xuhaohong/zentao-mcp-server.git"
+    "url": "git+https://github.com/xuhaohong/zentao-mcp-server.git"
   },
   "bin": {
-    "zentao-mcp-server": "./dist/index.js",
-    "zentao-mcp-install": "./dist/installer.js"
+    "zentao-mcp-installer": "dist/installer.js",
+    "zentao-mcp-server": "dist/index.js",
+    "zentao-mcp-install": "dist/installer.js"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",

@@ -94,7 +94,7 @@ function injectToTOML(
 export function createMCPConfig(): MCPConfig {
   return {
     command: 'npx',
-    args: ['-y', 'zentao-mcp-server'],
+    args: ['--yes', '--package=zentao-mcp-installer', '--call', 'zentao-mcp-server'],
     env: {
       ZENTAO_CONFIG: getConfigPath()
     }

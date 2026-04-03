@@ -5,13 +5,13 @@
 ## 一键安装（推荐）
 
 ```bash
-npx zentao-mcp-server install
+npx -y zentao-mcp-installer
 ```
 
 也可以直接使用安装器入口：
 
 ```bash
-npx zentao-mcp-install
+npx --yes --package=zentao-mcp-installer --call "zentao-mcp-install"
 ```
 
 安装器会自动：
@@ -57,7 +57,7 @@ EOF
   "mcpServers": {
     "zentao": {
       "command": "npx",
-      "args": ["-y", "zentao-mcp-server"],
+      "args": ["--yes", "--package=zentao-mcp-installer", "--call", "zentao-mcp-server"],
       "env": {
         "ZENTAO_CONFIG": "~/.agents/mcp/zentao-mcp-server/config.json"
       }

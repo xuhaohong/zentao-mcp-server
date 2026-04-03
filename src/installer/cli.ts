@@ -11,10 +11,11 @@ import { detectInstalledClients } from './detector.js';
 import { configExists, readConfig, saveConfig, getConfigPath } from './config-manager.js';
 import { injectToClient, createMCPConfig } from './injector.js';
 import { promptClientSelection, promptZentaoConfig } from './prompts.js';
+import { getPackageVersion } from '../version.js';
 
 export async function runInstallerCli() {
   console.log(chalk.bold.cyan('\n┌─────────────────────────────────────────────┐'));
-  console.log(chalk.bold.cyan('│ Zentao MCP Server 安装器 v0.1.0            │'));
+  console.log(chalk.bold.cyan(`│ Zentao MCP Server 安装器 v${getPackageVersion()}            │`));
   console.log(chalk.bold.cyan('└─────────────────────────────────────────────┘\n'));
 
   try {

@@ -17,6 +17,7 @@ import { registerStoryTools } from "./tools/story-tools.js";
 import { registerTaskTools } from "./tools/task-tools.js";
 import { registerUserTools } from "./tools/user-tools.js";
 import { formatUnknownError } from "./utils/errors.js";
+import { getPackageVersion } from "./version.js";
 
 function resolveConfigPath(argv: string[]): string {
   // 优先级 1: 环境变量 ZENTAO_CONFIG（用于安装器）
@@ -48,7 +49,7 @@ async function main(): Promise<void> {
 
       const server = new McpServer({
         name: "zentao-mcp-server",
-        version: "0.1.0"
+        version: getPackageVersion()
       });
 
       registerAuthTools(server, client);
