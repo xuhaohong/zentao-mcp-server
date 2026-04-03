@@ -7,7 +7,7 @@
   "author": "bibilabu",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/zentao-mcp-server.git"
+    "url": "https://github.com/xuhaohong/zentao-mcp-server.git"
   },
   "bin": {
     "zentao-mcp-server": "./dist/index.js",
