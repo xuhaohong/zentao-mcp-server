@@ -1,5 +1,5 @@
 {
-  "name": "zentao-mcp-server",
+  "name": "@xuhaohong/zentao-mcp-server",
   "version": "0.1.1",
   "description": "A local stdio MCP server for ZenTao with one-command installer",
   "type": "module",
