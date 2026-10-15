@@ -118,6 +118,27 @@ export function registerTaskTools(server: McpServer, client: ZenTaoClient): void
   );
 
   server.registerTool(
+    "zentao_close_task",
+    {
+      title: "Close ZenTao Task",
+      description: "关闭禅道任务，可附加备注。关闭后回读并确认任务状态；能否关闭由禅道的权限和任务状态规则决定。",
+      inputSchema: {
+        taskId: z.number().int().positive().describe("任务 ID"),
+        comment: z.string().min(1).optional().describe("可选，关闭备注")
+      },
+      annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
+    },
+    async ({ taskId, comment }) => {
+      const raw = await client.closeTask(taskId, comment);
+      const item = pickTaskSummary(raw as unknown as Record<string, unknown>);
+      return {
+        content: textContent(`任务已关闭：${raw.name ?? raw.id}`),
+        structuredContent: { item }
+      };
+    }
+  );
+
+  server.registerTool(
     "zentao_delete_task",
     {
       title: "Delete ZenTao Task",
