@@ -20,6 +20,7 @@ interface RequestOptions {
   query?: Record<string, string | number | boolean | undefined>;
   body?: unknown;
   skipAuth?: boolean;
+  retryAuth?: boolean;
 }
 
 function getErrorMessage(payload: unknown): string {
@@ -303,6 +304,41 @@ export class ZenTaoClient {
       query: { product: productId, assignedTo: filters?.assignedTo, status: filters?.status }
     });
     return asArray<ZenTaoBug>(isRecord(payload) ? payload.bugs : undefined);
+  }
+
+  public async closeTask(taskId: number, comment?: string): Promise<ZenTaoTask> {
+    // v1 requires a posted field to execute the close action, even without a comment.
+    const body = { comment: comment ?? "" };
+    let payload: unknown;
+    try {
+      payload = await this.request({ method: "PUT", version: "v2", path: `/tasks/${taskId}/close`, body, retryAuth: false });
+    } catch (error) {
+      // Only an unsupported endpoint permits another write through the older API.
+      if (!(error instanceof ZenTaoApiError) || (error.httpStatus !== 404 && error.httpStatus !== 405)) throw error;
+      payload = await this.request({ method: "POST", version: "v1", path: `/tasks/${taskId}/close`, body, retryAuth: false });
+    }
+
+    if (isRecord(payload) && (payload.result === "fail" || payload.result === "error")) {
+      throw new ZenTaoApiError(`关闭任务 ${taskId} 失败：${getErrorMessage(payload)}`, { details: payload });
+    }
+
+    const responseTask = isRecord(payload) && isRecord(payload.task) ? payload.task : payload;
+    const acknowledged = isRecord(payload) && (payload.status === "success" ||
+      (isRecord(responseTask) && Number(responseTask.id) === taskId && responseTask.status === "closed"));
+    if (!acknowledged) {
+      throw new ZenTaoApiError(`关闭请求已发送，但响应异常，无法确认任务 ${taskId} 是否已关闭，请先查询任务状态。`, { details: payload });
+    }
+
+    let task: ZenTaoTask;
+    try {
+      task = await this.getTask(taskId);
+    } catch (error) {
+      throw new ZenTaoApiError(`关闭请求已发送，但无法确认任务 ${taskId} 的最终状态，请先查询任务状态。${formatUnknownError(error)}`);
+    }
+    if (Number(task.id) !== taskId || task.status !== "closed") {
+      throw new ZenTaoApiError(`关闭请求已发送，但无法确认任务 ${taskId} 已关闭，返回状态为 ${String(task.status)}，请先查询任务状态。`, { details: task });
+    }
+    return task;
   }
 
   public async deleteTask(taskId: number): Promise<void> {
@@ -685,11 +721,11 @@ export class ZenTaoClient {
     }
 
     if (!response.ok) {
-      if (response.status === 401 && !retried && !options.skipAuth && this.cachedToken) {
+      if (response.status === 401 && !retried && !options.skipAuth && options.retryAuth !== false && this.cachedToken) {
         this.cachedToken = undefined;
         return this.request<T>(options, true);
       }
-      throw new ZenTaoApiError(`禅道请求失败：HTTP ${response.status} ${response.statusText}，${getErrorMessage(payload)}`, { details: payload });
+      throw new ZenTaoApiError(`禅道请求失败：HTTP ${response.status} ${response.statusText}，${getErrorMessage(payload)}`, { httpStatus: response.status, details: payload });
     }
 
     if (isFailurePayload(payload)) {
