@@ -83,6 +83,7 @@ EOF
 - `zentao_get_task`
 - `zentao_create_task`
 - `zentao_create_child_task`
+- `zentao_close_task`
 - `zentao_delete_task`
 - `zentao_add_task_comment`
 - `zentao_list_bugs`
@@ -95,6 +96,25 @@ EOF
 - 不再接收 `execution`
 - 实际写入的 `execution` 会根据父任务自动解析
 - `storyId` 只有在显式传入时才会关联到子任务，不会从父任务自动继承
+
+### 关闭任务
+
+`zentao_close_task` 接收必填的正整数 `taskId` 和可选的非空字符串 `comment`：
+
+```json
+{
+  "taskId": 123,
+  "comment": "验收通过，关闭任务。"
+}
+```
+
+不需要备注时省略 `comment`。成功后返回任务摘要，`structuredContent.item.status` 为 `closed`。
+是否允许关闭由禅道的权限和任务状态规则决定；此工具不会自动完成任务或强制关闭其子任务。
+
+关闭操作优先调用 [REST v2 的 PUT 接口](https://www.zentao.net/book/api/put-tasks-taskid-close-2213.html)，
+仅在 HTTP 404/405 时回退到 [REST v1 的 POST 接口](https://www.zentao.net/book/api/1200.html)。
+权限错误、业务拒绝、网络异常和无法识别的响应不会触发另一次关闭写入。
+工具会在写入后查询任务，确认 ID 和 `closed` 状态后才返回成功；如果提示无法确认，请先查询任务状态再决定后续操作。
 
 ## 环境要求
 
@@ -149,6 +169,14 @@ node dist/index.js --config ./config/zentao.config.local.json
 
 如果不传 `--config`，默认读取当前工作目录下的 `config/zentao.config.local.json`。
 
+## 测试
+
+```bash
+node --import tsx --test tests/*.test.ts
+```
+
+关闭任务测试使用模拟禅道响应和 MCP 内存传输，不会修改真实禅道任务。
+
 ## 在 MCP 客户端中接入
 
 以 Claude Desktop / Codex 一类本地 MCP 配置为例：
@@ -172,7 +200,7 @@ node dist/index.js --config ./config/zentao.config.local.json
 
 - 使用 JSON 配置，不依赖环境变量
 - 优先使用禅道官方 REST API 文档中的 `v2` 接口
-- 当实例上的 `v2` 接口不可用或返回结构异常时，客户端会自动回退到对应的 `v1` 接口
+- 查询接口在 `v2` 不可用或返回结构异常时会回退到对应的 `v1` 接口；关闭任务的回退条件见上文
 - 列表工具统一支持本地分页和关键词过滤
 - 每个工具都同时返回简短文本摘要与结构化 JSON
 
@@ -180,5 +208,4 @@ node dist/index.js --config ./config/zentao.config.local.json
 
 - 增加 `zentao_create_story`
 - 增加 `zentao_create_bug`
-- 增加 `zentao_close_task`
 - 基于现有底层工具封装高阶 workflow tools
