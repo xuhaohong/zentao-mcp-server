@@ -15,13 +15,15 @@ export class AuthError extends Error {
 export class ZenTaoApiError extends Error {
   public readonly code?: string | number;
   public readonly status?: string | number;
+  public readonly httpStatus?: number;
   public readonly details?: unknown;
 
-  public constructor(message: string, options?: { code?: string | number; status?: string | number; details?: unknown }) {
+  public constructor(message: string, options?: { code?: string | number; status?: string | number; httpStatus?: number; details?: unknown }) {
     super(message);
     this.name = "ZenTaoApiError";
     this.code = options?.code;
     this.status = options?.status;
+    this.httpStatus = options?.httpStatus;
     this.details = options?.details;
   }
 }
